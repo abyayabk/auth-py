@@ -12,6 +12,8 @@
   "dependencies": {
     "@google-cloud/translate": "^8.5.1",
     "@headlessui/react": "^1.7.18",
+    "axios": "^1.8.4",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

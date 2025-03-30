@@ -1,53 +1,111 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { SplashScreen } from './components/SplashScreen';
 import { Navbar } from './components/Navbar';
-import { LoginForm, RegisterForm } from './components/AuthForms';
 import { Stories } from './components/Stories';
 import { Learn } from './components/Learn';
 import { Quiz } from './components/Quiz';
-import { useAuthStore } from './store/authStore';
+import ProtectedRoutes from './components/ProtectedRoutes';
+import { ACCESS_TOKEN, REFRESH_TOKEN } from './constants';
+import { Home } from './components/Home/Home';
+import { Globe2 } from 'lucide-react';
+import { Form } from './components/Form/Form';
+import { Sidebar } from './components/Sidebar/Sidebar';
+import { AuthProvider } from './contexts/AuthContext';
+import { UserList } from './components/UserList/UserList';
+import { NavProfile } from './components/NavProfile/NavProfile';
+import { useAuth } from './contexts/AuthContext';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<SplashScreen />} />
-        <Route
-          path="/*"
-          element={
-            <div className="min-h-screen bg-gray-50">
-              <Navbar />
-              <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/loading-screen" element={<SplashScreen />} />
+          <Route
+            path="/*"
+            element={
+              <div className="min-h-screen bg-gray-50">
+                <HomeNav />
                 <Routes>
-                  <Route path="/home" element={<Home />} />
-                  <Route path="/login" element={<LoginForm />} />
-                  <Route path="/register" element={<RegisterForm />} />
-                  <Route path="/stories" element={<Stories />} />
-                  <Route path="/learn" element={<Learn />} />
-                  <Route path="/quiz" element={<Quiz />} />
+                  <Route path="/" element={<Home />} />
                   <Route path="/about" element={<About />} />
-                  <Route path="/resources" element={<Resources />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/login" element={<Form method="login" />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route
+                    path="/dashboard/*"
+                    element={
+                      <div className="min-h-screen bg-gray-50">
+                        <Navbar />
+                        <Sidebar />
+                        <div className="ml-72 mt-8 mr-8 mb-8">
+                          <ProtectedRoutes>
+                            <Routes>
+                              <Route path="stories" element={<Stories />} />
+                              <Route path="learn" element={<Learn />} />
+                              <Route path="quiz" element={<Quiz />} />
+                              <Route path="resources" element={<Resources />} />
+                              <Route path="users" element={<UserList />} />
+                            </Routes>
+                          </ProtectedRoutes>
+                        </div>
+                      </div>
+                    }
+                  />
                 </Routes>
-              </main>
-            </div>
-          }
-        />
-      </Routes>
-    </Router>
+              </div>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
-const Home = () => (
-  <div className="prose max-w-none">
-    <h1>Welcome to LinguaLearn</h1>
-    <p>Start your language learning journey today!</p>
-  </div>
-);
+const HomeNav = () => {
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
+  if (location.pathname.includes('/dashboard')) {
+    return null;
+  }
+
+  return (
+    <header>
+      <div className="container">
+        <nav>
+          <div className="nav-links">
+            <Link to="/" className="flex items-center">
+              <Globe2 className="h-8 w-8 text-indigo-600" />
+              <span className="ml-2 text-xl font-bold text-gray-800">LinguaLearn</span>
+            </Link>
+            <Link to="/loading-screen" className="flex items-center">
+              Learn
+            </Link>
+            <Link to="/about" className="flex items-center">
+              About Us
+            </Link>
+          </div>
+          {isAuthenticated ? (
+            <NavProfile />
+          ) : (
+            <div className="nav-right">
+              <Link to="/login" className="btn btn-outline">Login</Link>
+              <Link to="/register" className="btn btn-primary">Register</Link>
+            </div>
+          )}
+        </nav>
+      </div>
+    </header>
+  )
+}
+
+const Register = () => {
+  localStorage.removeItem(ACCESS_TOKEN);
+  localStorage.removeItem(REFRESH_TOKEN);
+  return <Form method="register" />;
+}
 
 const About = () => (
-  <div className="prose max-w-none">
+  <div className="prose max-w-none mt-28 ml-32">
     <h2>About LinguaLearn</h2>
     <p>Your comprehensive platform for language learning and cultural exchange.</p>
   </div>
@@ -59,20 +117,5 @@ const Resources = () => (
     <p>Access our curated collection of language learning materials.</p>
   </div>
 );
-
-const Dashboard = () => {
-  const { user } = useAuthStore();
-  
-  if (!user) {
-    return <div>Please log in to access the dashboard.</div>;
-  }
-
-  return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Welcome, {user.name}!</h2>
-      {/* Dashboard content would go here */}
-    </div>
-  );
-};
 
 export default App;
