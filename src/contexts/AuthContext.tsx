@@ -50,13 +50,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Clear tokens on startup
+  // Check authentication status when component mounts
   useEffect(() => {
-    localStorage.removeItem(ACCESS_TOKEN);
-    localStorage.removeItem(REFRESH_TOKEN);
-    setIsAuthenticated(false);
-    setUser(null);
-    setIsLoading(false);
+    checkAuth();
   }, []);
 
   // Function to refresh the JWT token
@@ -78,6 +74,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem(ACCESS_TOKEN, response.data.access);
         localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
         setIsAuthenticated(true);
+        const user = await getUser();
+        setUser(user);
       }
     } catch (error) {
       localStorage.removeItem(ACCESS_TOKEN);
@@ -118,18 +116,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // Check authentication status when component mounts
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
   // Login function
   const login = async (username: string, password: string) => {
     try {
-      // Clear any existing tokens before login
-      localStorage.removeItem(ACCESS_TOKEN);
-      localStorage.removeItem(REFRESH_TOKEN);
-      
       const response = await api.post('/api/token/', {
         username,
         password,
@@ -160,9 +149,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       if (response.status === 201) {
-        // Don't automatically login after registration
-        setIsAuthenticated(false);
-        setUser(null);
+        // After successful registration, log the user in
+        // await login(username, password);
+        // Optionally, you can redirect to login page or show a success message
+        console.log('User registered successfully');        
       }
     } catch (error) {
       throw error;

@@ -33,8 +33,9 @@ export const UserList = () => {
 
     const deleteUser = async (id: number) => {
         try {
-            const response = await api.delete(`api/user/delete/${id}`);
-            if (response.status === 200) {
+            const response = await api.delete(`api/user/delete/${id}/`);
+            
+            if (response.status === 204) {
                 getUsers();
             }
         } catch (error) {
@@ -61,7 +62,9 @@ export const UserList = () => {
                                 <td>{item.id}</td>
                                 <td>{item.username}</td>
                                 <td><span className={`role role-${item.role.role}`}>{item.role.role.charAt(0).toUpperCase() + item.role.role.slice(1)}</span></td>
-                                <td><button className="btn btn-delete" onClick={() => deleteUser(item.id)}>Delete</button></td>
+                                {item.username !== 'admin' && (
+                                    <td><button className="btn btn-delete" onClick={() => deleteUser(item.id)}>Delete</button></td>
+                                )}
                             </tr>
                         );
                     })}
