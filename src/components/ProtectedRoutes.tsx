@@ -43,7 +43,6 @@ function ProtectedRoutes({ children }: { children: React.ReactNode }) {
 
     const checkAuth = async () => {
         const accessToken = localStorage.getItem(ACCESS_TOKEN);
-        console.log(accessToken);
 
         if (!accessToken) {
             setIsAuthenticated(false);
@@ -53,7 +52,6 @@ function ProtectedRoutes({ children }: { children: React.ReactNode }) {
         try {
             const decoded = jwtDecode(accessToken);
             const currentTime = Date.now() / 1000;
-            console.log(decoded);
             if (decoded.exp && decoded.exp < currentTime) {
                 await refreshToken();
             } else {

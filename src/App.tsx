@@ -10,14 +10,13 @@ import { Home } from './components/Home/Home';
 import { Globe2 } from 'lucide-react';
 import { Form } from './components/Form/Form';
 import { Sidebar } from './components/Sidebar/Sidebar';
-import { AuthProvider } from './contexts/AuthContext';
 import { UserList } from './components/UserList/UserList';
 import { NavProfile } from './components/NavProfile/NavProfile';
 import { useAuth } from './contexts/AuthContext';
 
 function App() {
+  const { user } = useAuth();
   return (
-    <AuthProvider>
       <Router>
         <Routes>
           <Route path="/loading-screen" element={<SplashScreen />} />
@@ -44,7 +43,9 @@ function App() {
                               <Route path="learn" element={<Learn />} />
                               <Route path="quiz" element={<Quiz />} />
                               <Route path="resources" element={<Resources />} />
-                              <Route path="users" element={<UserList />} />
+                              {user?.role?.role === 'admin' && (
+                                <Route path="users" element={<UserList />} />
+                              )}
                             </Routes>
                           </ProtectedRoutes>
                         </div>
@@ -57,7 +58,6 @@ function App() {
           />
         </Routes>
       </Router>
-    </AuthProvider>
   );
 }
 

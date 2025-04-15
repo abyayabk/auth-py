@@ -11,6 +11,26 @@ class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+class DeleteUserView(generics.DestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+class UserDetailView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+class ListUsers(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
     
 class UserLanguagePreferenceView(generics.ListCreateAPIView):
     serializer_class = UserLanguagePreferenceSerializer

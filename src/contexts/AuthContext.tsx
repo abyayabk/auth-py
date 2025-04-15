@@ -2,10 +2,16 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { jwtDecode } from 'jwt-decode';
 import api from '../api';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
+
+interface UserRole {
+  role: string;
+}
+
 // Define what a User looks like
 interface User {
   id: number;
   username: string;
+  role: UserRole;
 }
 
 // Define what our context will provide
@@ -17,6 +23,7 @@ interface AuthContextType {
   register: (username: string, password: string) => Promise<void>;
   logout: () => void;
   refreshToken: () => Promise<void>;
+  getUser: () => Promise<User>;
 }
 
 // Create the context with undefined as initial value
@@ -83,15 +90,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const decoded = jwtDecode(accessToken) as any;
       const currentTime = Date.now() / 1000;
-
       if (decoded.exp && decoded.exp < currentTime) {
         await refreshToken();
       } else {
         setIsAuthenticated(true);
-        setUser({
-          id: decoded.user_id,
-          username: decoded.username,
-        });
+        const user = await getUser();
+        setUser(user);
       }
     } catch (error) {
       setIsAuthenticated(false);
@@ -118,11 +122,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem(ACCESS_TOKEN, response.data.access);
         localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
         setIsAuthenticated(true);
-        const decoded = jwtDecode(response.data.access) as any;
-        setUser({
-          id: decoded.user_id,
-          username: decoded.username,
-        });
+        const user = await getUser();
+        setUser(user);
       }
     } catch (error) {
       throw error;
@@ -139,6 +140,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (response.status === 201) {
         await login(username, password);
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const getUser = async () => {
+    try {
+      const response = await api.get('/api/user/detail/');
+      return {
+        id: response.data.id,
+        username: response.data.username,
+        role: response.data.role,
       }
     } catch (error) {
       throw error;
@@ -162,6 +176,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     refreshToken,
+    getUser,
   };
 
   // Provide the context to children
