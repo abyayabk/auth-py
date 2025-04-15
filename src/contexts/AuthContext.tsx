@@ -50,6 +50,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Clear tokens on startup
+  useEffect(() => {
+    localStorage.removeItem(ACCESS_TOKEN);
+    localStorage.removeItem(REFRESH_TOKEN);
+    setIsAuthenticated(false);
+    setUser(null);
+    setIsLoading(false);
+  }, []);
+
   // Function to refresh the JWT token
   const refreshToken = async () => {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN);
@@ -71,6 +80,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsAuthenticated(true);
       }
     } catch (error) {
+      localStorage.removeItem(ACCESS_TOKEN);
+      localStorage.removeItem(REFRESH_TOKEN);
       setIsAuthenticated(false);
       setUser(null);
     }
@@ -98,6 +109,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(user);
       }
     } catch (error) {
+      localStorage.removeItem(ACCESS_TOKEN);
+      localStorage.removeItem(REFRESH_TOKEN);
       setIsAuthenticated(false);
       setUser(null);
     } finally {
@@ -113,6 +126,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Login function
   const login = async (username: string, password: string) => {
     try {
+      // Clear any existing tokens before login
+      localStorage.removeItem(ACCESS_TOKEN);
+      localStorage.removeItem(REFRESH_TOKEN);
+      
       const response = await api.post('/api/token/', {
         username,
         password,
@@ -126,6 +143,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(user);
       }
     } catch (error) {
+      localStorage.removeItem(ACCESS_TOKEN);
+      localStorage.removeItem(REFRESH_TOKEN);
+      setIsAuthenticated(false);
+      setUser(null);
       throw error;
     }
   };
@@ -139,7 +160,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
 
       if (response.status === 201) {
-        await login(username, password);
+        // Don't automatically login after registration
+        setIsAuthenticated(false);
+        setUser(null);
       }
     } catch (error) {
       throw error;

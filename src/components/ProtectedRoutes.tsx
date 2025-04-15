@@ -4,13 +4,18 @@ import { jwtDecode } from "jwt-decode"
 import api from '../api'
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants'
 import { useState, useEffect } from "react"
-
+import { useAuth } from '../contexts/AuthContext'
 
 function ProtectedRoutes({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+    const { user } = useAuth();
+
     useEffect(() => {
-        checkAuth().catch( () => {
+        checkAuth().catch(() => {
             setIsAuthenticated(false);
+            // Clear tokens on authentication failure
+            localStorage.removeItem(ACCESS_TOKEN);
+            localStorage.removeItem(REFRESH_TOKEN);
         });
     }, []);
 
@@ -19,6 +24,8 @@ function ProtectedRoutes({ children }: { children: React.ReactNode }) {
 
         if (!refreshToken) {
             setIsAuthenticated(false);
+            localStorage.removeItem(ACCESS_TOKEN);
+            localStorage.removeItem(REFRESH_TOKEN);
             return;
         }
 
@@ -29,15 +36,18 @@ function ProtectedRoutes({ children }: { children: React.ReactNode }) {
 
             if (response.status !== 200) {
                 setIsAuthenticated(false);
+                localStorage.removeItem(ACCESS_TOKEN);
+                localStorage.removeItem(REFRESH_TOKEN);
                 return;
             }
 
             localStorage.setItem(ACCESS_TOKEN, response.data.access);
             localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
-
             setIsAuthenticated(true);
         } catch (error) {
             setIsAuthenticated(false);
+            localStorage.removeItem(ACCESS_TOKEN);
+            localStorage.removeItem(REFRESH_TOKEN);
         }
     }
 
@@ -59,12 +69,15 @@ function ProtectedRoutes({ children }: { children: React.ReactNode }) {
             }
         } catch (error) {
             setIsAuthenticated(false);
+            localStorage.removeItem(ACCESS_TOKEN);
+            localStorage.removeItem(REFRESH_TOKEN);
         }
     }
 
     if (isAuthenticated === null) return <div>Loading...</div>;
 
-    return isAuthenticated ? children : <Navigate to="/login" />;
+    // Check both authentication and user role
+    return isAuthenticated && user ? children : <Navigate to="/login" />;
 }
 
 export default ProtectedRoutes;
