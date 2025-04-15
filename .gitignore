@@ -14,12 +14,27 @@ node_modules/
 dist/
 dist-ssr/
 
-# SQLite database (if applicable)
+# SQLite database
 *.sqlite
 *.sqlite3
 
 # Local environment files
+.env
 *.local
+env/
+venv/
+backend/env/
+
+# Python
+__pycache__/
+*.py[cod]
+pyvenv.cfg
+
+# TypeScript
+*.tsbuildinfo
+
+# Vite
+.vite/
 
 # Editor directories and files
 .vscode/*

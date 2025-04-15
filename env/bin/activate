@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Users/abyayabhadrakhanal/Downloads/FinalYearUG-master/env"
+VIRTUAL_ENV="/Users/abyayabhadrakhanal/Desktop/clone/auth-py/env"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
